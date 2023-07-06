@@ -4,7 +4,6 @@ import {
   OperationResult,
   success,
   failure,
-  Node,
   toNodeTree,
 } from "../domain"
 import {
@@ -36,6 +35,10 @@ export const buildNodeTree = (
     }
   })
 
+  Object.values(nodeMap).forEach(
+    (node) => (node.children = orderChildren(node.children)),
+  )
+
   return success(topLevel)
 }
 
@@ -44,23 +47,61 @@ const prechecks = (
 ): OperationResult<NodeList, TreeBuildFailures> => {
   const keys: { [key: string]: true } = {}
   const duplicates: string[] = []
+  let hasFoundTopLeft = false
+  let hasNullAsNodeId = false
 
-  nodeList.forEach(({ nodeId }) => {
+  nodeList.forEach(({ nodeId, parentId, previousSiblingId }) => {
     if (keys[nodeId]) {
       duplicates.unshift(nodeId)
     } else {
       keys[nodeId] = true
     }
+    if (parentId === null && previousSiblingId === null) {
+      hasFoundTopLeft = true
+    }
+    if (nodeId === "null") {
+      hasNullAsNodeId = true
+    }
   })
 
+  const errors: TreeBuildFailures[] = []
+
   if (duplicates.length) {
-    return failure([
-      {
-        type: TreeBuildFailureReasons.duplicateNodeIds,
-        nodeIds: duplicates,
-      },
-    ])
+    errors.unshift({
+      type: TreeBuildFailureReasons.duplicateNodeIds,
+      nodeIds: duplicates,
+    })
+  }
+  if (!hasFoundTopLeft) {
+    errors.unshift({
+      type: TreeBuildFailureReasons.noTopLeftNode,
+    })
+  }
+  if (hasNullAsNodeId) {
+    errors.unshift({
+      type: TreeBuildFailureReasons.nodeHasNullAsId,
+    })
+  }
+
+  if (errors.length) {
+    return failure(errors)
   }
 
   return success(nodeList)
+}
+
+const orderChildren = (
+  children: NodeTree[],
+  key: string | null = null,
+): NodeTree[] => {
+  if (children.length === 0) return []
+
+  const maybeNextChild = children.find(
+    (child) => child.previousSiblingId === key,
+  )
+  if (!maybeNextChild) return []
+
+  const nextChild = maybeNextChild as NodeTree
+
+  return [nextChild, ...orderChildren(children, nextChild.nodeId)]
 }

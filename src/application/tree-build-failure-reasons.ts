@@ -1,5 +1,7 @@
 export enum TreeBuildFailureReasons {
   duplicateNodeIds,
+  noTopLeftNode,
+  nodeHasNullAsId,
 }
 
 interface DuplicateNodeIds {
@@ -7,4 +9,15 @@ interface DuplicateNodeIds {
   nodeIds: string[]
 }
 
-export type TreeBuildFailures = DuplicateNodeIds
+interface NoTopLeftNode {
+  type: TreeBuildFailureReasons.noTopLeftNode
+}
+
+interface NodeHasNullAsId {
+  type: TreeBuildFailureReasons.nodeHasNullAsId
+}
+
+export type TreeBuildFailures =
+  | DuplicateNodeIds
+  | NoTopLeftNode
+  | NodeHasNullAsId
