@@ -4,7 +4,7 @@
   "description": "Boilerplate template for typescript and node",
   "main": "index.js",
   "scripts": {
-    "start": "npm run build:live",
+    "start": "ts-node ./src/index.ts",
     "build": "tsc -p .",
     "prod": "node lib/index.js",
     "build:live": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",

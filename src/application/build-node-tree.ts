@@ -11,6 +11,12 @@ import {
   TreeBuildFailures,
 } from "./tree-build-failure-reasons"
 
+// Here is the main "application logic". My goal was to divide the process of building the
+// tree into 3 steps: some pre-checks to check it is possible to attempt to build a tree
+// (e.g. each node id is unique), attempting to build the tree, and some more post checks
+// (e.g. that there are no loops, and every node is connected to the root). At each stage
+// the logic should be able to produce either a Success, or a list of errors detailing why
+// it cannot continue. I did not complete the post checks yet.
 export const buildNodeTree = (
   nodeList: NodeList,
 ): OperationResult<NodeTree[], TreeBuildFailures> => {
@@ -39,7 +45,7 @@ export const buildNodeTree = (
     (node) => (node.children = orderChildren(node.children)),
   )
 
-  return success(topLevel)
+  return success(orderChildren(topLevel))
 }
 
 const prechecks = (
@@ -90,6 +96,8 @@ const prechecks = (
   return success(nodeList)
 }
 
+// I do not think this is the optimal solution for sorting the children.
+// See the readme for more comments.
 const orderChildren = (
   children: NodeTree[],
   key: string | null = null,
