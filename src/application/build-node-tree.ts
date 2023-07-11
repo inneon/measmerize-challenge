@@ -6,6 +6,7 @@ import {
   failure,
   toNodeTree,
 } from "../domain"
+import { checkForLoops } from "./check-for-loops"
 import {
   TreeBuildFailureReasons,
   TreeBuildFailures,
@@ -51,6 +52,16 @@ export const buildNodeTree = (
 
   if (buildChildrenErrors.length) {
     return failure(buildChildrenErrors)
+  }
+
+  const loops = checkForLoops(nodeMap)
+  if (loops.length) {
+    return failure(
+      loops.map((loop) => ({
+        type: TreeBuildFailureReasons.circularParentChildLoop,
+        nodeIdsInLoop: loop,
+      })),
+    )
   }
 
   return success(orderChildren(topLevel).orderedChildren)

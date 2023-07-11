@@ -198,7 +198,7 @@ describe("building a node tree", () => {
       expect(actual).toEqual(expected)
     })
 
-    it.skip("rejects when there is a loop in parent-child relationships", () => {
+    it("rejects when there is a loop in parent-child relationships", () => {
       const nodeList: NodeList = [
         {
           nodeId: "Top",
