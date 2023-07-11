@@ -235,7 +235,7 @@ describe("building a node tree", () => {
       expect(actual).toEqual(expected)
     })
 
-    it.todo("rejects when there is a loop in siblings", () => {
+    it("rejects when there is a loop in siblings", () => {
       const nodeList: NodeList = [
         {
           nodeId: "1",
@@ -268,8 +268,8 @@ describe("building a node tree", () => {
         result: "error",
         errors: [
           {
-            type: TreeBuildFailureReasons.circularSiblingLoop,
-            nodeIdsInLoop: ["3", "4"],
+            type: TreeBuildFailureReasons.invalidChildrenList,
+            invalidChildIds: ["3", "4"],
           },
         ],
       }
@@ -277,8 +277,83 @@ describe("building a node tree", () => {
       expect(actual).toEqual(expected)
     })
 
-    it.todo("rejects when there two nodes have the same previous sibling")
-    it.todo("rejects when there a parent previous-sibling is not valid")
+    it("rejects when there two nodes have the same previous sibling", () => {
+      const nodeList: NodeList = [
+        {
+          nodeId: "1",
+          name: "One",
+          parentId: null,
+          previousSiblingId: null,
+        },
+        {
+          nodeId: "2",
+          name: "Two",
+          parentId: "1",
+          previousSiblingId: null,
+        },
+        {
+          nodeId: "3",
+          name: "Three",
+          parentId: "1",
+          previousSiblingId: "2",
+        },
+        {
+          nodeId: "4",
+          name: "Four",
+          parentId: "1",
+          previousSiblingId: "2",
+        },
+      ]
+
+      const actual = buildNodeTree(nodeList)
+      const expected: OperationResult<NodeTree[], TreeBuildFailures> = {
+        result: "error",
+        errors: [
+          {
+            type: TreeBuildFailureReasons.invalidChildrenList,
+            invalidChildIds: ["3", "4"],
+          },
+        ],
+      }
+
+      expect(actual).toEqual(expected)
+    })
+
+    it("rejects when there a parent previous-sibling is not valid", () => {
+      const nodeList: NodeList = [
+        {
+          nodeId: "1",
+          name: "One",
+          parentId: null,
+          previousSiblingId: null,
+        },
+        {
+          nodeId: "2",
+          name: "Two",
+          parentId: "1",
+          previousSiblingId: null,
+        },
+        {
+          nodeId: "3",
+          name: "Three",
+          parentId: "1",
+          previousSiblingId: "This id doesn't exist",
+        },
+      ]
+
+      const actual = buildNodeTree(nodeList)
+      const expected: OperationResult<NodeTree[], TreeBuildFailures> = {
+        result: "error",
+        errors: [
+          {
+            type: TreeBuildFailureReasons.invalidChildrenList,
+            invalidChildIds: ["3"],
+          },
+        ],
+      }
+
+      expect(actual).toEqual(expected)
+    })
 
     it("rejects when a node id is 'null'", () => {
       const nodeList: NodeList = [
@@ -303,6 +378,7 @@ describe("building a node tree", () => {
 
       expect(actual).toEqual(expected)
     })
+
     it.todo("rejects multiple problems and reports correctly")
   })
 })

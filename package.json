@@ -1,8 +1,8 @@
 {
-  "name": "ts-template",
+  "name": "measmerize-test",
   "version": "1.0.0",
-  "description": "Boilerplate template for typescript and node",
-  "main": "./src/index.js",
+  "description": "Submission for Measmerize test",
+  "main": "./src/index.t mxzs",
   "scripts": {
     "start": "ts-node ./src/index.ts",
     "start:interactive": "ts-node ./src/index.ts -i",

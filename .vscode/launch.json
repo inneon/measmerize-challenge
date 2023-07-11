@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node-terminal",
+      "name": "Debug server",
+      "request": "launch",
+      "command": "npm run start",
+      "cwd": "${fileDirname}"
+    },
+    {
+      "type": "node-terminal",
+      "name": "Debug tests",
+      "request": "launch",
+      "command": "npm run test",
+      "cwd": "${fileDirname}"
+    }
+  ]
+}

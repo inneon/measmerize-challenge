@@ -35,17 +35,25 @@ export const buildNodeTree = (
   Object.values(nodeMap).forEach((node) => {
     const parentId = node.parentId
     if (parentId === null) {
-      topLevel.unshift(node)
+      topLevel.push(node)
     } else {
-      nodeMap[parentId].children.unshift(node)
+      nodeMap[parentId].children.push(node)
     }
   })
 
-  Object.values(nodeMap).forEach(
-    (node) => (node.children = orderChildren(node.children)),
-  )
+  const buildChildrenErrors = Object.values(nodeMap).reduce<
+    TreeBuildFailures[]
+  >((errorAccumulator, node) => {
+    const { orderedChildren, errors } = orderChildren(node.children)
+    node.children = orderedChildren
+    return [...errorAccumulator, ...errors]
+  }, [])
 
-  return success(orderChildren(topLevel))
+  if (buildChildrenErrors.length) {
+    return failure(buildChildrenErrors)
+  }
+
+  return success(orderChildren(topLevel).orderedChildren)
 }
 
 const prechecks = (
@@ -96,21 +104,52 @@ const prechecks = (
   return success(nodeList)
 }
 
-const orderChildren = (children: NodeTree[]) => {
-  const mapByPrevious: { [key: string]: NodeTree } = children.reduce<{
-    [key: string]: NodeTree
+interface OrderChildrenResult {
+  orderedChildren: NodeTree[]
+  errors: TreeBuildFailures[]
+}
+
+const orderChildren = (children: NodeTree[]): OrderChildrenResult => {
+  const result: NodeTree[] = []
+  const errors: TreeBuildFailures[] = []
+
+  const { mapByPrevious, errors: buildChildMapErrors } = children.reduce<{
+    mapByPrevious: { [key: string]: NodeTree }
+    errors: TreeBuildFailures[]
   }>(
-    (accumulator, current) => ({
-      ...accumulator,
-      [current.previousSiblingId ?? "null"]: current,
-    }),
-    {},
+    ({ mapByPrevious, errors }, current) => {
+      const conflictingSibling =
+        mapByPrevious[current.previousSiblingId ?? "null"]
+      if (conflictingSibling) {
+        return {
+          mapByPrevious,
+          errors: [
+            ...errors,
+            {
+              type: TreeBuildFailureReasons.invalidChildrenList,
+              invalidChildIds: [
+                conflictingSibling.nodeId,
+                current.nodeId,
+              ].sort(),
+            },
+          ],
+        }
+      }
+      return {
+        mapByPrevious: {
+          ...mapByPrevious,
+          [current.previousSiblingId ?? "null"]: current,
+        },
+        errors,
+      }
+    },
+    { mapByPrevious: {}, errors: [] },
   )
 
-  const result: NodeTree[] = []
+  errors.push(...buildChildMapErrors)
 
   let current = mapByPrevious["null"]
-  let loopBound = 100000 // some arbitrarily large number
+  let loopBound = 1000000 // some arbitrarily large number
 
   while (current) {
     result.push(current)
@@ -119,5 +158,19 @@ const orderChildren = (children: NodeTree[]) => {
     if (loopBound < 0) throw Error("something went wrong reordering children")
   }
 
-  return result
+  const placeableChildren = Object.values(mapByPrevious)
+  if (result.length < placeableChildren.length) {
+    const placedChildrenIds = result.map(({ nodeId }) => nodeId)
+    const unplacedChildIds = placeableChildren
+      .map(({ nodeId }) => nodeId)
+      .filter(
+        (originalChildId) => placedChildrenIds.indexOf(originalChildId) === -1,
+      )
+    errors.push({
+      type: TreeBuildFailureReasons.invalidChildrenList,
+      invalidChildIds: unplacedChildIds.sort(),
+    })
+  }
+
+  return { orderedChildren: result, errors }
 }

@@ -14,7 +14,9 @@ export enum TreeBuildFailureReasons {
   noTopLeftNode = "There is no top left node",
   nodeHasNullAsId = "A node has an id of 'null'",
   circularParentChildLoop = "There is a circular dependency in the parent-child relationships",
-  circularSiblingLoop = "There is a circular dependency in the sibling relationships",
+  // There are a few reasons for this error to occur (circular loops, duplicate ids, invalid ids).
+  // In the interests of not spending forever on this challenge I have lumped them all together.
+  invalidChildrenList = "The children could not be built",
 }
 
 // Data structures capturing different failure modes. Note that some of
@@ -38,9 +40,9 @@ interface TreeHasCircularParentChildLoop {
   nodeIdsInLoop: string[]
 }
 
-interface TreeHasCircularSiblingLoop {
-  type: TreeBuildFailureReasons.circularSiblingLoop
-  nodeIdsInLoop: string[]
+interface InvalidChildrenList {
+  type: TreeBuildFailureReasons.invalidChildrenList
+  invalidChildIds: string[]
 }
 
 export type TreeBuildFailures =
@@ -48,4 +50,4 @@ export type TreeBuildFailures =
   | NoTopLeftNode
   | NodeHasNullAsId
   | TreeHasCircularParentChildLoop
-  | TreeHasCircularSiblingLoop
+  | InvalidChildrenList
