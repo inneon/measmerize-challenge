@@ -4,6 +4,7 @@ export const checkForLoops = (nodesById: {
   [key: string]: NodeTree
 }): string[][] => {
   // Define the function for checking a single node...
+  const nodeIdsConnectedToRoot: string[] = []
   const checkNodeForLoop = (
     node: NodeTree,
     seenIds: string[] = [],
@@ -11,8 +12,12 @@ export const checkForLoops = (nodesById: {
     if (seenIds.indexOf(node.nodeId) !== -1) {
       // This is a loop
       return seenIds
-    } else if (node.parentId === null) {
+    } else if (
+      node.parentId === null ||
+      nodeIdsConnectedToRoot.indexOf(node.parentId) !== -1
+    ) {
       // This is not a loop
+      nodeIdsConnectedToRoot.push(...seenIds)
       return "success"
     } else {
       // Recursive case

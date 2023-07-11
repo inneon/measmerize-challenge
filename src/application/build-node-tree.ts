@@ -7,6 +7,7 @@ import {
   toNodeTree,
 } from "../domain"
 import { checkForLoops } from "./check-for-loops"
+import { prechecks } from "./prechecks"
 import {
   TreeBuildFailureReasons,
   TreeBuildFailures,
@@ -17,7 +18,7 @@ import {
 // (e.g. each node id is unique), attempting to build the tree, and some more post checks
 // (e.g. that there are no loops, and every node is connected to the root). At each stage
 // the logic should be able to produce either a Success, or a list of errors detailing why
-// it cannot continue. I did not complete the post checks yet.
+// it cannot continue.
 export const buildNodeTree = (
   nodeList: NodeList,
 ): OperationResult<NodeTree[], TreeBuildFailures> => {
@@ -33,6 +34,8 @@ export const buildNodeTree = (
 
   const topLevel: NodeTree[] = []
 
+  // Building the output tree
+  // First build the general shape of the tree (parent-child relationships)...
   Object.values(nodeMap).forEach((node) => {
     const parentId = node.parentId
     if (parentId === null) {
@@ -42,6 +45,7 @@ export const buildNodeTree = (
     }
   })
 
+  // ... then put the children in the right order
   const buildChildrenErrors = Object.values(nodeMap).reduce<
     TreeBuildFailures[]
   >((errorAccumulator, node) => {
@@ -49,8 +53,10 @@ export const buildNodeTree = (
     node.children = orderedChildren
     return [...errorAccumulator, ...errors]
   }, [])
+  const { orderedChildren: orderedTopLevel, errors: topLevelOrderErrors } =
+    orderChildren(topLevel)
 
-  if (buildChildrenErrors.length) {
+  if ([...buildChildrenErrors, ...topLevelOrderErrors].length) {
     return failure(buildChildrenErrors)
   }
 
@@ -64,55 +70,7 @@ export const buildNodeTree = (
     )
   }
 
-  return success(orderChildren(topLevel).orderedChildren)
-}
-
-const prechecks = (
-  nodeList: NodeList,
-): OperationResult<NodeList, TreeBuildFailures> => {
-  const keys: { [key: string]: true } = {}
-  const duplicates: string[] = []
-  let hasFoundTopLeft = false
-  let hasNullAsNodeId = false
-
-  nodeList.forEach(({ nodeId, parentId, previousSiblingId }) => {
-    if (keys[nodeId]) {
-      duplicates.unshift(nodeId)
-    } else {
-      keys[nodeId] = true
-    }
-    if (parentId === null && previousSiblingId === null) {
-      hasFoundTopLeft = true
-    }
-    if (nodeId === "null") {
-      hasNullAsNodeId = true
-    }
-  })
-
-  const errors: TreeBuildFailures[] = []
-
-  if (duplicates.length) {
-    errors.unshift({
-      type: TreeBuildFailureReasons.duplicateNodeIds,
-      nodeIds: duplicates,
-    })
-  }
-  if (!hasFoundTopLeft) {
-    errors.unshift({
-      type: TreeBuildFailureReasons.noTopLeftNode,
-    })
-  }
-  if (hasNullAsNodeId) {
-    errors.unshift({
-      type: TreeBuildFailureReasons.nodeHasNullAsId,
-    })
-  }
-
-  if (errors.length) {
-    return failure(errors)
-  }
-
-  return success(nodeList)
+  return success(orderedTopLevel)
 }
 
 interface OrderChildrenResult {

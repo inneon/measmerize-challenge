@@ -6,6 +6,128 @@ import {
 } from "./tree-build-failure-reasons"
 
 describe("building a node tree", () => {
+  it("gives the example output for the given input", () => {
+    const nodeList: NodeList = [
+      {
+        nodeId: "4",
+        name: "Four",
+        parentId: "2",
+        previousSiblingId: "6",
+      },
+      {
+        nodeId: "8",
+        name: "Eight",
+        parentId: "7",
+        previousSiblingId: null,
+      },
+      {
+        nodeId: "2",
+        name: "Two",
+        parentId: "1",
+        previousSiblingId: null,
+      },
+      {
+        nodeId: "6",
+        name: "Six",
+        parentId: "2",
+        previousSiblingId: null,
+      },
+      {
+        nodeId: "3",
+        name: "Three",
+        parentId: null,
+        previousSiblingId: null,
+      },
+      {
+        nodeId: "5",
+        name: "Five",
+        parentId: "4",
+        previousSiblingId: null,
+      },
+      {
+        nodeId: "7",
+        name: "Seven",
+        parentId: null,
+        previousSiblingId: "1",
+      },
+      {
+        nodeId: "1",
+        name: "One",
+        parentId: null,
+        previousSiblingId: "3",
+      },
+    ]
+
+    const actual = buildNodeTree(nodeList)
+
+    const expected: OperationResult<NodeTree[], TreeBuildFailures> = {
+      result: "success",
+      value: [
+        {
+          nodeId: "3",
+          name: "Three",
+          parentId: null,
+          previousSiblingId: null,
+          children: [],
+        },
+        {
+          nodeId: "1",
+          name: "One",
+          parentId: null,
+          previousSiblingId: "3",
+          children: [
+            {
+              nodeId: "2",
+              name: "Two",
+              parentId: "1",
+              previousSiblingId: null,
+              children: [
+                {
+                  nodeId: "6",
+                  name: "Six",
+                  parentId: "2",
+                  previousSiblingId: null,
+                  children: [],
+                },
+                {
+                  nodeId: "4",
+                  name: "Four",
+                  parentId: "2",
+                  previousSiblingId: "6",
+                  children: [
+                    {
+                      nodeId: "5",
+                      name: "Five",
+                      parentId: "4",
+                      previousSiblingId: null,
+                      children: [],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          nodeId: "7",
+          name: "Seven",
+          parentId: null,
+          previousSiblingId: "1",
+          children: [
+            {
+              nodeId: "8",
+              name: "Eight",
+              parentId: "7",
+              previousSiblingId: null,
+              children: [],
+            },
+          ],
+        },
+      ],
+    }
+    expect(actual).toEqual(expected)
+  })
+
   describe("happy paths", () => {
     it("can build a tree from a single node", () => {
       const nodeList: NodeList = [
@@ -378,7 +500,5 @@ describe("building a node tree", () => {
 
       expect(actual).toEqual(expected)
     })
-
-    // it("rejects multiple problems and reports correctly", () => {})
   })
 })
