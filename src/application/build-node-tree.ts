@@ -96,20 +96,28 @@ const prechecks = (
   return success(nodeList)
 }
 
-// I do not think this is the optimal solution for sorting the children.
-// See the readme for more comments.
-const orderChildren = (
-  children: NodeTree[],
-  key: string | null = null,
-): NodeTree[] => {
-  if (children.length === 0) return []
-
-  const maybeNextChild = children.find(
-    (child) => child.previousSiblingId === key,
+const orderChildren = (children: NodeTree[]) => {
+  const mapByPrevious: { [key: string]: NodeTree } = children.reduce<{
+    [key: string]: NodeTree
+  }>(
+    (accumulator, current) => ({
+      ...accumulator,
+      [current.previousSiblingId ?? "null"]: current,
+    }),
+    {},
   )
-  if (!maybeNextChild) return []
 
-  const nextChild = maybeNextChild as NodeTree
+  const result: NodeTree[] = []
 
-  return [nextChild, ...orderChildren(children, nextChild.nodeId)]
+  let current = mapByPrevious["null"]
+  let loopBound = 100000 // some arbitrarily large number
+
+  while (current) {
+    result.push(current)
+    current = mapByPrevious[current.nodeId]
+    loopBound--
+    if (loopBound < 0) throw Error("something went wrong reordering children")
+  }
+
+  return result
 }

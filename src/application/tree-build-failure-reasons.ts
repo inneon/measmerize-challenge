@@ -13,7 +13,8 @@ export enum TreeBuildFailureReasons {
   duplicateNodeIds = "There are duplicate nodes in the tree",
   noTopLeftNode = "There is no top left node",
   nodeHasNullAsId = "A node has an id of 'null'",
-  circularParentChildLoop = "There is a circular dependency",
+  circularParentChildLoop = "There is a circular dependency in the parent-child relationships",
+  circularSiblingLoop = "There is a circular dependency in the sibling relationships",
 }
 
 // Data structures capturing different failure modes. Note that some of
@@ -31,8 +32,14 @@ interface NoTopLeftNode {
 interface NodeHasNullAsId {
   type: TreeBuildFailureReasons.nodeHasNullAsId
 }
+
 interface TreeHasCircularParentChildLoop {
   type: TreeBuildFailureReasons.circularParentChildLoop
+  nodeIdsInLoop: string[]
+}
+
+interface TreeHasCircularSiblingLoop {
+  type: TreeBuildFailureReasons.circularSiblingLoop
   nodeIdsInLoop: string[]
 }
 
@@ -41,3 +48,4 @@ export type TreeBuildFailures =
   | NoTopLeftNode
   | NodeHasNullAsId
   | TreeHasCircularParentChildLoop
+  | TreeHasCircularSiblingLoop

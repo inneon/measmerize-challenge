@@ -234,7 +234,49 @@ describe("building a node tree", () => {
 
       expect(actual).toEqual(expected)
     })
-    it.todo("rejects when there is a loop in siblings")
+
+    it.todo("rejects when there is a loop in siblings", () => {
+      const nodeList: NodeList = [
+        {
+          nodeId: "1",
+          name: "One",
+          parentId: null,
+          previousSiblingId: null,
+        },
+        {
+          nodeId: "2",
+          name: "Two",
+          parentId: "1",
+          previousSiblingId: null,
+        },
+        {
+          nodeId: "3",
+          name: "Three",
+          parentId: "1",
+          previousSiblingId: "4",
+        },
+        {
+          nodeId: "4",
+          name: "Four",
+          parentId: "1",
+          previousSiblingId: "3",
+        },
+      ]
+
+      const actual = buildNodeTree(nodeList)
+      const expected: OperationResult<NodeTree[], TreeBuildFailures> = {
+        result: "error",
+        errors: [
+          {
+            type: TreeBuildFailureReasons.circularSiblingLoop,
+            nodeIdsInLoop: ["3", "4"],
+          },
+        ],
+      }
+
+      expect(actual).toEqual(expected)
+    })
+
     it.todo("rejects when there two nodes have the same previous sibling")
     it.todo("rejects when there a parent previous-sibling is not valid")
 
