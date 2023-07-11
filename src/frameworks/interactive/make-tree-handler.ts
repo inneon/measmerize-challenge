@@ -1,6 +1,7 @@
 import inquirer, { Answers } from "inquirer"
 import { MenuItemHandler } from "."
 import { buildNodeTree } from "../../application"
+import { toHumanReadable } from "../failure-to-human-readable"
 import { parseFileNameToNodes } from "../parse-string-to-nodes"
 
 const makeTreeHandler = async (): Promise<Answers | void> => {
@@ -21,8 +22,7 @@ const makeTreeHandler = async (): Promise<Answers | void> => {
   if (tree.result === "success") {
     console.log(JSON.stringify(tree.value))
   } else {
-    const errors = tree.errors
-    console.error(JSON.stringify(errors))
+    console.error(tree.errors.map(toHumanReadable).join("\n"))
   }
 }
 

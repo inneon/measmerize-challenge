@@ -27,7 +27,7 @@ The high level layout of this project is loosely based on clean architecture. Th
 
 I like this layout as it helps to surface the core objects and application rules at the top level, not just how the application is run.
 
-### TODOs
+### Further extensions
 
 As I mention we all would like infinite time to create perfectly crafted code, there are a few more thing I did not get to. Here are the things that I would do in order of priority.
 

@@ -1,4 +1,5 @@
 import { buildNodeTree } from "../../application"
+import { toHumanReadable } from "../failure-to-human-readable"
 import { parseFileNameToNodes } from "../parse-string-to-nodes"
 
 export const singleRunFromFileName = (fileName: string) => {
@@ -12,7 +13,6 @@ export const singleRunFromFileName = (fileName: string) => {
   if (tree.result === "success") {
     console.log(JSON.stringify(tree.value))
   } else {
-    const errors = tree.errors
-    console.error(JSON.stringify(errors))
+    console.error(tree.errors.map(toHumanReadable).join("\n"))
   }
 }

@@ -4,19 +4,14 @@
 // which I would complete if I had more time.
 
 // The reasons for not being able to build a tree.
-// Note that this implementaion is not quite right: the concerns of uniquely
-// identifying each failure case is mixed with the concern of showing this as
-// an output. With more time I would extract the translation from an interal
-// failure reason to a external facing message (e.g. HTTP status codes) to the
-// presentation layer.
 export enum TreeBuildFailureReasons {
-  duplicateNodeIds = "There are duplicate nodes in the tree",
-  noTopLeftNode = "There is no top left node",
-  nodeHasNullAsId = "A node has an id of 'null'",
-  circularParentChildLoop = "There is a circular dependency in the parent-child relationships",
+  duplicateNodeIds,
+  noTopLeftNode,
+  nodeHasNullAsId,
+  circularParentChildLoop,
   // There are a few reasons for this error to occur (circular loops, duplicate ids, invalid ids).
   // In the interests of not spending forever on this challenge I have lumped them all together.
-  invalidChildrenList = "The children could not be built",
+  invalidChildrenList,
 }
 
 // Data structures capturing different failure modes. Note that some of

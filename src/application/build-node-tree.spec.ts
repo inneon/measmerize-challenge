@@ -379,6 +379,6 @@ describe("building a node tree", () => {
       expect(actual).toEqual(expected)
     })
 
-    it.todo("rejects multiple problems and reports correctly")
+    // it("rejects multiple problems and reports correctly", () => {})
   })
 })
